@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Information</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #282c34;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #ffff;
+        }
+
+        table {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%; /* Adjust the width as needed */
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+        .class{
+            margin-top: 25px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>User Information</h1>
+    <input type="hidden" id="loggedUserId" value="{{loggedUserId}}" />
+    <input type="hidden" id="loggedUserRole" value="{{loggedUserRole}}" />
+    <table>
+        <tr style="color: black;">
+            <th>Pic</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Edit</th>
+        </tr>
+        {{#each users}}
+        <tr style="color: black;">
+            <td><img src="/{{profilePic}}" alt="Profile Pic" width="50" height="50"></td>
+            <td>{{name}}</td>
+            <td>{{email}}</td>
+            <td>{{role}}</td>
+            <td><button onclick="openEditModal('{{name}}', '{{email}}', '{{role}}', '{{id}}')">🖋 Edit</button></td>
+        </tr>
+        {{/each}}
+    </table>
+
+    <input type="hidden" id="selectedUserId" value="" />
+
+    <!-- Modal structure -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex;justify-content:space-between">
+            <h2>Edit User</h2>
+            <span class="close" onclick="closeModal()">X</span>
+            </div>
+
+            <table>
+                <tr style="color: black;">
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Edit</th>
+                </tr>
+                <tr id="modalUserData" style="color: black;">
+                    <td>
+                        <input type="text" id="userName" />
+                    </td>
+                    <td>
+                        <input type="email" id="userEmail" />
+                    </td>
+                    <td>
+                        <select id="userRole">
+                             <option value="superadmin">Superadmin</option>
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
+                        </select>
+                    </td>
+                    <td style="display:flex;gap:8px;margin-top: 15px;">
+                        <button onclick="saveChanges()">Save</button>
+                        <button onclick="closeModal()">Cancel</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <script>
+        async function openEditModal(name, email, role, id) {
+    try {
+        console.log(name, email, role, id);
+        const loggedInUserRole = document.querySelector('#loggedUserRole').value;
+        if(loggedInUserRole === "user") {
+            alert("You are not authorized to edit user data");
+            return;
+        } else if(loggedInUserRole === "admin") {
+            document.querySelector("#userRole option[value='superadmin']").style.display = "none";
+            document.querySelector("#userRole option[value='admin']").style.display = "block";
+        } else if(loggedInUserRole === "superadmin") {
+            document.querySelector("#userRole option[value='superadmin']").style.display = "block";
+            document.querySelector("#userRole option[value='admin']").style.display = "block";
+        }
+        document.getElementById('userName').value = name; 
+        document.getElementById('userEmail').value = email;
+        document.getElementById('userRole').value = role;
+        document.getElementById('selectedUserId').value = id;
+        document.getElementById('editModal').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+    }
+}
+
+     async function saveChanges() {
+        const id = document.getElementById('selectedUserId').value;
+        const name = document.getElementById('userName').value;
+        const email = document.getElementById('userEmail').value;
+        const role = document.getElementById('userRole').value;
+        const loggedInUserId = document.querySelector('#loggedUserId').value;
+
+        //updating the user data
+
+        fetch("/user/update", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                id,
+                name,
+                email,
+                role,
+                loggedInUserId,
+            }),
+        }).then(response => response.json()).then(data => {
+            alert("updated user data successfully!")
+            window.location.reload();
+            console.log("success", data);
+        })
+    }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Set a timeout to redirect to the logout route after 1 hour (3600000 milliseconds)
+        setTimeout(() => {
+            window.location.href = "/logout"; // Redirect to the logout route
+        }, 3600000);
+    </script>
+</body>
+
+</html>
