@@ -212,6 +212,7 @@ app.post("/forgot-password", async (req, res) => {
     console.log(oldUser);
 
     const secret = process.env.JWT_TOKEN + oldUser.password;
+    console.log(secret);
     const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, secret, {
       expiresIn: "1hr",
     });
