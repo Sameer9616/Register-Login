@@ -226,7 +226,7 @@ app.post("/forgot-password", async (req, res) => {
       }
     );
 
-    const resetLink = `http://localhost:3000/reset-password/${oldUser._id}/${token}`;
+    const resetLink = `${process.env.BACKEND_URI}/reset-password/${oldUser._id}/${token}`;
 
     const mailOptions = {
       from: process.env.EMAIL,
