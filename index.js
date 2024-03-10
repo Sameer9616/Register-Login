@@ -209,6 +209,7 @@ app.post("/forgot-password", async (req, res) => {
     if (!oldUser) {
       return res.json({ status: "User Not Exists!!" });
     }
+    console.log(oldUser);
 
     const secret = process.env.JWT_TOKEN + oldUser.password;
     const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, secret, {
